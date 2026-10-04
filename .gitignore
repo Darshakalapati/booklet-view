@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Local database, collected static files and secrets
+db.sqlite3
+staticfiles/
+.env
+
+# Frontend (added in a later phase)
+node_modules/
+dist/
+
+# Editors and operating systems
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Word lock files
+~$*.docx
+
+# Launcher log
+backend.log

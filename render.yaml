@@ -1,0 +1,23 @@
+# Tells Render how to run Booklet View.
+# In Render: New > Blueprint > pick this repository. It reads this file.
+services:
+  - type: web
+    name: booklet-view
+    runtime: docker
+    plan: free
+    healthCheckPath: /api/health/
+    envVars:
+      - key: BOOKLET_DEBUG
+        value: "0"
+      # A random secret, made by Render the first time.
+      - key: BOOKLET_SECRET_KEY
+        generateValue: true
+      # Render asks for these three when the Blueprint is created.
+      # DATABASE_URL is the connection string from Neon (starts with postgresql://).
+      - key: DATABASE_URL
+        sync: false
+      # The first admin account of the live site.
+      - key: BOOKLET_ADMIN_USERNAME
+        sync: false
+      - key: BOOKLET_ADMIN_PASSWORD
+        sync: false

@@ -1,0 +1,11 @@
+.git
+**/__pycache__
+**/*.pyc
+**/.venv
+**/node_modules
+frontend/dist
+python_code/db.sqlite3
+python_code/staticfiles
+documents
+backend.log
+*.command
