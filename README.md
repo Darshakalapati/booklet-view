@@ -15,6 +15,10 @@ A website where people keep tables (ledgers, price lists, checklists, task lists
 - Data is typed in or uploaded from an **Excel or CSV** file.
 - A table that is too wide for one page continues on the next page, and the **first column is repeated** so the reader always knows which row they are on.
 - Pages **turn like paper**: drag a page and it curls under the finger; swipe, tap an edge, or use the arrow keys.
+- Each book has a **cover cloth and a label**, reopens **where you left off** with a ribbon at the page, and can be read in **night mode**.
+- **Search** the book, jump to **today's** row, and see **cash-book totals** (brought forward, carried forward, total) under number columns.
+- **Add a row or tick a box from inside the book.** Start tables from **templates** (ledger, price list, checklist and more), or read one **from a photo** of a paper page.
+- **Share** a book read-only with another user, **print** it two pages to a sheet (or save as PDF), and **install** it on a phone's home screen.
 - Delete is never on the normal view. It sits inside each item, asks for confirmation, and moves the item to a trash it can be restored from.
 
 ## Status
@@ -26,9 +30,10 @@ A website where people keep tables (ledgers, price lists, checklists, task lists
 | 3 | Book view without animation (ledger look, cover, contents) | **Done** |
 | 4 | Page-turning animation, on phones and laptops | **Done** |
 | — | Live on the internet on a free plan (Render + Neon) | **Done** |
-| 5 | Layout polish for laptop, desktop, iPad and phone | Next |
+| 5 | Daily-use improvements: shelf, resume, search, today, totals, add from the book, templates, sharing, print, install, night mode | **Done** |
+| 7 | Read a table from a photo of a paper page (first version) | **Done** |
+| — | Layout polish for laptop, desktop, iPad and phone | Next |
 | 6 | Upload tables from Word and PDF | Planned |
-| 7 | Upload photos of paper pages | Planned |
 
 ## Folders
 
@@ -151,7 +156,8 @@ python manage.py test
 | `07-Going-Live.docx` | Putting the site on the internet: decisions, code changes, steps |
 | `08-Page-Turning.docx` | Phase 4: the page-turning animation |
 | `09-Complete-Record.docx` | The whole conversation in order: requests, decisions, problems solved, and going live |
+| `10-Daily-Use-Improvements.docx` | The fourteen improvements of 15 November: what each does, how it was built, what was tested |
 
 ## Built with
 
-Python, Django, Django REST Framework and openpyxl for the backend. React and Vite for the screens, with [StPageFlip](https://github.com/Nodlik/StPageFlip) for the page turn. SQLite for development and PostgreSQL for production. Gunicorn, WhiteNoise and Docker on the server.
+Python, Django, Django REST Framework and openpyxl for the backend. React and Vite for the screens, with [StPageFlip](https://github.com/Nodlik/StPageFlip) for the page turn and [Tesseract.js](https://tesseract.projectnaptha.com/) for reading photos in the browser. SQLite for development and PostgreSQL for production. Gunicorn, WhiteNoise and Docker on the server.

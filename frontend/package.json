@@ -4,8 +4,10 @@
   "version": "0.2.0",
   "type": "module",
   "scripts": {
+    "predev": "node scripts/copy-ocr.mjs",
     "dev": "vite",
     "dev:phone": "vite --host",
+    "prebuild": "node scripts/copy-ocr.mjs",
     "build": "vite build",
     "preview": "vite preview"
   },
@@ -15,9 +17,11 @@
     "page-flip": "^2.0.7",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^6.28.0"
+    "react-router-dom": "^6.28.0",
+    "tesseract.js": "^5.1.1"
   },
   "devDependencies": {
+    "@tesseract.js-data/eng": "^1.0.0",
     "@vitejs/plugin-react": "^4.3.4",
     "vite": "^6.0.0"
   }

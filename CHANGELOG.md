@@ -2,6 +2,32 @@
 
 Every change to the project, newest first. Each entry names the document that records the discussion behind it.
 
+## 2026-11-15 — Daily-use improvements
+
+Notes: `documents/10-Daily-Use-Improvements.docx`
+
+### Added (Python)
+
+- `books/models.py`: Book gains `subtitle`, `color` (five cloths), `readers` and `last_written_at()`; new `BookShare` model for read-only sharing. Migration `0002_book_cover_and_sharing`.
+- `books/booklet.py`: number columns carry brought-forward, page and running totals on every page (`totals`, `last_rows`).
+- `books/views.py`: readers of a shared book may use the reading addresses only; new `GET/POST/DELETE /books/{id}/shares/`; the booklet answer carries `can_edit`, `color`, `subtitle` and every table's columns.
+- `books/serializers.py`: `access`, `reader_count`, `last_written_at`; `ShareSerializer`.
+- `booklet_site/settings.py`: correct file types for `.webmanifest`, `.wasm` and `.gz`.
+- 8 new tests (79 in total).
+
+### Added (screens)
+
+- Shelf: cover cloth, short label, "written yesterday", a "Shared with you" shelf.
+- Reader: reopens where it was left (per device) with a ribbon; menu with Today, Add a row, Night/Day, Print and search; totals at the foot of pages; ticks that save when tapped; "+ Add a row" at the foot of a table's last page; today's rows marked at the margin; faint paper grain.
+- Book page: templates for new tables; "From a photo" (Tesseract.js in the browser, engine served by the site, review grid before saving); sharing in Book settings; cover settings; read-only mode for readers; Print link.
+- Print view at `/books/{id}/print`: two pages per sheet, landscape, with totals.
+- Install on a phone: `manifest.webmanifest`, icons, `sw.js`.
+
+### Checked
+
+- 79 backend tests pass; 25 browser checks pass at phone, tablet and laptop sizes on the development and production builds; a generated table photo was read with all cells correct.
+- Not checked: a real paper photo, Safari, a real phone, installing, a real printer.
+
 ## 2026-10-04 — Live
 
 Record: `documents/09-Complete-Record.docx`

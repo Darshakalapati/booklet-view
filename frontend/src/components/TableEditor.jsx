@@ -13,7 +13,7 @@ const typeLabel = (type) => TYPES.find(([value]) => value === type)[1];
 const toDraft = (value) => (value === null || value === undefined ? '' : String(value));
 
 // One cell of the grid. Typing changes a local draft; leaving the cell saves it.
-function Cell({ column, value, label, autoFocus, onSave }) {
+function Cell({ column, value, label, autoFocus, readOnly, onSave }) {
   const [draft, setDraft] = useState(toDraft(value));
   const [invalid, setInvalid] = useState(false);
   useEffect(() => {
@@ -29,6 +29,7 @@ function Cell({ column, value, label, autoFocus, onSave }) {
         className="cell-check"
         checked={draft === 'true'}
         aria-label={label}
+        disabled={readOnly}
         onChange={(event) => {
           setDraft(String(event.target.checked));
           onSave(event.target.checked).catch(() => setDraft(toDraft(value)));
@@ -55,6 +56,7 @@ function Cell({ column, value, label, autoFocus, onSave }) {
       value={draft}
       aria-label={label}
       aria-invalid={invalid || undefined}
+      readOnly={readOnly}
       autoFocus={autoFocus}
       onChange={(event) => setDraft(event.target.value)}
       onBlur={commit}
@@ -128,7 +130,7 @@ function shifted(ids, id, step) {
   return next;
 }
 
-export default function TableEditor({ tableId }) {
+export default function TableEditor({ tableId, readOnly = false }) {
   const [table, setTable] = useState(null);
   const [error, setError] = useState('');
   const [open, setOpen] = useState(null); // {kind: 'add-column' | 'column' | 'row', item}
@@ -203,10 +205,12 @@ export default function TableEditor({ tableId }) {
 
       {columns.length === 0 ? (
         <div className="empty">
-          <p>This table has no columns yet. Add the first column, then add rows under it.</p>
-          <button type="button" className="button primary" onClick={() => setOpen({ kind: 'add-column' })}>
-            Add column
-          </button>
+          <p>This table has no columns yet.{readOnly ? '' : ' Add the first column, then add rows under it.'}</p>
+          {!readOnly && (
+            <button type="button" className="button primary" onClick={() => setOpen({ kind: 'add-column' })}>
+              Add column
+            </button>
+          )}
         </div>
       ) : (
         <>
@@ -222,8 +226,9 @@ export default function TableEditor({ tableId }) {
                       <button
                         type="button"
                         className="head-button"
-                        onClick={() => setOpen({ kind: 'column', item: column })}
-                        title="Open column"
+                        onClick={() => !readOnly && setOpen({ kind: 'column', item: column })}
+                        title={readOnly ? undefined : 'Open column'}
+                        disabled={readOnly}
                       >
                         <span className="head-name">{column.name}</span>
                         <span className="head-type">{typeLabel(column.data_type)}</span>
@@ -231,9 +236,11 @@ export default function TableEditor({ tableId }) {
                     </th>
                   ))}
                   <th className="grid-add" scope="col">
-                    <button type="button" className="button quiet" onClick={() => setOpen({ kind: 'add-column' })}>
-                      Add column
-                    </button>
+                    {!readOnly && (
+                      <button type="button" className="button quiet" onClick={() => setOpen({ kind: 'add-column' })}>
+                        Add column
+                      </button>
+                    )}
                   </th>
                 </tr>
               </thead>
@@ -244,8 +251,9 @@ export default function TableEditor({ tableId }) {
                       <button
                         type="button"
                         className="rownum-button"
-                        onClick={() => setOpen({ kind: 'row', item: row, number: index + 1 })}
-                        title="Open row"
+                        onClick={() => !readOnly && setOpen({ kind: 'row', item: row, number: index + 1 })}
+                        title={readOnly ? undefined : 'Open row'}
+                        disabled={readOnly}
                       >
                         {index + 1}
                       </button>
@@ -257,6 +265,7 @@ export default function TableEditor({ tableId }) {
                           value={row.data[column.id]}
                           label={`${column.name}, row ${index + 1}`}
                           autoFocus={row.id === newRowId && columnIndex === 0}
+                          readOnly={readOnly}
                           onSave={(value) => saveCell(row, column, value)}
                         />
                       </td>
@@ -268,11 +277,13 @@ export default function TableEditor({ tableId }) {
             </table>
           </div>
           <div className="row-actions">
-            <button type="button" className="button" onClick={addRow}>
-              Add row
-            </button>
+            {!readOnly && (
+              <button type="button" className="button" onClick={addRow}>
+                Add row
+              </button>
+            )}
             <span className="muted small">
-              {rows.length} {rows.length === 1 ? 'row' : 'rows'}. Changes save when you leave a cell.
+              {rows.length} {rows.length === 1 ? 'row' : 'rows'}.{readOnly ? '' : ' Changes save when you leave a cell.'}
             </span>
           </div>
         </>

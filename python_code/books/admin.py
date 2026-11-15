@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Book, Column, Row, Table
+from .models import Book, BookShare, Column, Row, Table
 
 
 class TrashAwareAdmin(admin.ModelAdmin):
@@ -32,3 +32,8 @@ class ColumnAdmin(TrashAwareAdmin):
 @admin.register(Row)
 class RowAdmin(TrashAwareAdmin):
     list_display = ("id", "table", "position", "deleted_at")
+
+
+@admin.register(BookShare)
+class BookShareAdmin(admin.ModelAdmin):
+    list_display = ("book", "user", "created_at")

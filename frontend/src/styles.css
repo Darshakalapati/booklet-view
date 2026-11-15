@@ -284,6 +284,22 @@ div.empty {
 
 /* ---------- Book covers (sign-in, shelf, and the reader's cover page) ---------- */
 
+[data-cloth='green'] {
+  --cloth: #1f3a2e;
+  --leather: #7a3b2a;
+}
+[data-cloth='maroon'] {
+  --cloth: #4a1f28;
+  --leather: #2b2b2b;
+}
+[data-cloth='brown'] {
+  --cloth: #4a3220;
+  --leather: #8e2d2d;
+}
+[data-cloth='black'] {
+  --cloth: #1c1c1e;
+  --leather: #8e2d2d;
+}
 .book-cover,
 .signin-cover,
 .page-cover {
@@ -739,8 +755,11 @@ div.empty {
   flex-direction: column;
   padding: 0 30px;
   background-color: var(--paper);
-  /* the shadow where the page meets the binding */
-  background-image: linear-gradient(90deg, rgba(40, 60, 45, 0.22), transparent 26px);
+  /* the shadow where the page meets the binding, over a faint grain */
+  background-image:
+    linear-gradient(90deg, rgba(40, 60, 45, 0.22), transparent 26px),
+    repeating-linear-gradient(0deg, rgba(60, 80, 60, 0.035) 0 1px, transparent 1px 4px),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.05) 0 1px, transparent 1px 5px);
   font-family: var(--book);
   color: var(--ink);
 }
@@ -793,6 +812,7 @@ div.empty {
   color: var(--ink-soft);
 }
 .page-foot {
+  position: relative;
   margin-top: auto;
   height: 44px;
   flex: none;
@@ -802,6 +822,28 @@ div.empty {
   font-size: 0.85rem;
   font-variant-numeric: lining-nums;
   color: var(--ink-soft);
+}
+.page-add {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 0.25rem 0.5rem;
+  border: 1px dashed var(--ink-soft);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+.page-add:hover {
+  color: var(--ink);
+  border-color: var(--ink);
+}
+.book.is-spread .stf__item.--right .page-add {
+  left: auto;
+  right: 0;
 }
 .book.is-compact .page-foot {
   height: 36px;
@@ -882,9 +924,23 @@ div.empty {
   position: relative;
   width: 0.95em;
   height: 0.95em;
+  padding: 0;
   border: 1.5px solid var(--ink);
   border-radius: 2px;
+  background: transparent;
   vertical-align: -0.12em;
+  color: inherit;
+}
+.tick:disabled {
+  opacity: 1;
+}
+.tick.can-tick {
+  cursor: pointer;
+  /* a bigger finger target than the box itself */
+  box-shadow: 0 0 0 10px transparent;
+}
+.tick.can-tick:hover {
+  background: rgba(27, 42, 73, 0.1);
 }
 .tick.is-on::after {
   content: '';
@@ -943,15 +999,91 @@ div.empty {
   top: 0;
   left: 0;
   right: 0;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.6rem 0.9rem;
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.6rem 0.9rem 0.8rem;
   padding-top: max(0.6rem, env(safe-area-inset-top));
-  background: rgba(22, 32, 27, 0.94);
-  color: var(--paper);
+  background: rgba(22, 32, 27, 0.95);
+  color: #e8efdf;
   font-size: 0.9rem;
+  max-height: 80vh;
+  overflow: auto;
 }
+.menu-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+.menu-title {
+  flex: 1;
+  min-width: 10rem;
+}
+.reader-menu .button {
+  min-height: 2.2rem;
+  background: transparent;
+  color: inherit;
+  border-color: rgba(232, 239, 223, 0.6);
+}
+.reader-menu .button:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+.reader-menu .button[aria-pressed='true'] {
+  background: #e8efdf;
+  color: #16201b;
+}
+.menu-search {
+  flex: 1;
+  min-height: 2.4rem;
+  padding: 0 0.7rem;
+  border: 1px solid rgba(232, 239, 223, 0.6);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  color: inherit;
+  font: inherit;
+}
+.menu-search::placeholder {
+  color: rgba(232, 239, 223, 0.6);
+}
+.menu-results {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 2px;
+}
+.menu-results button {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  padding: 0.45rem 0.6rem;
+  border: none;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.07);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.menu-results button:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+.hit-label {
+  font-weight: 600;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.hit-where {
+  flex: none;
+  opacity: 0.75;
+}
+.menu-none {
+  padding: 0.3rem 0.6rem;
+  opacity: 0.75;
+}
+
 .reader-hint {
   position: absolute;
   left: 50%;
@@ -966,4 +1098,314 @@ div.empty {
   font-size: 0.85rem;
   text-align: center;
   pointer-events: none;
+}
+
+/* ---------- Totals, found rows, today, ribbon ---------- */
+
+.ledger tfoot td {
+  border-top: 2px solid #6d9585;
+  font-weight: 600;
+  font-family: var(--ui);
+  font-size: 0.82em;
+}
+.ledger tfoot .is-bf td,
+.ledger tfoot tr.is-bf td {
+  border-top: 1px solid var(--rule);
+  font-weight: 400;
+  font-style: italic;
+  color: var(--ink-soft);
+}
+.ledger tr.is-found > * {
+  background: rgba(196, 72, 62, 0.16);
+  transition: background 600ms ease;
+}
+.ledger tr.is-today > :first-child {
+  box-shadow: inset 3px 0 0 var(--margin-red);
+}
+
+.ribbon {
+  position: absolute;
+  top: -4px;
+  right: 5%;
+  width: 18px;
+  height: 20%;
+  min-height: 56px;
+  background: linear-gradient(90deg, #8e2d2d, #b4433f 55%, #7a2424);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 86%, 0 100%);
+  box-shadow: 2px 3px 4px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+  z-index: 2;
+}
+.book.is-compact .ribbon {
+  width: 14px;
+  right: 3%;
+}
+
+/* ---------- Night mode for the book ---------- */
+
+.reader.is-night {
+  --felt: #0b0e0c;
+  --paper: #22261f;
+  --ink: #e4dcc6;
+  --ink-soft: #a39b85;
+  --rule: #3e4a3f;
+  --margin-red: #b25a52;
+  background: var(--felt);
+}
+.reader.is-night .page-paper {
+  background-image:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.35), transparent 26px),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.02) 0 1px, transparent 1px 4px);
+}
+.reader.is-night .ledger thead th,
+.reader.is-night .ledger tfoot td {
+  border-color: #6a7a6a;
+}
+.reader.is-night .ledger tr.is-found > * {
+  background: rgba(178, 90, 82, 0.3);
+}
+.reader.is-night .tick.can-tick:hover {
+  background: rgba(228, 220, 198, 0.15);
+}
+
+/* ---------- Shelf notes, cloth and template choices, sharing ---------- */
+
+.shelf-note {
+  margin-top: 0.4rem;
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+}
+.shelf-heading {
+  margin: 2rem 0 1rem;
+}
+.cloths,
+.templates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+.cloths legend,
+.templates legend {
+  padding: 0;
+  margin-bottom: 0.4rem;
+  font-weight: 500;
+}
+.cloth-choice {
+  position: relative;
+  width: 2.6rem;
+  height: 3.4rem;
+  border-radius: 2px 5px 5px 2px;
+  background-color: var(--cloth);
+  background-image: linear-gradient(90deg, var(--leather) 0 14%, rgba(0, 0, 0, 0.35) 14% 16%, transparent 16%);
+  cursor: pointer;
+  outline: 2px solid transparent;
+  outline-offset: 3px;
+}
+.cloth-choice.is-chosen {
+  outline-color: var(--ink);
+}
+.cloth-choice input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.cloth-choice:has(input:focus-visible) {
+  outline-color: var(--ink);
+}
+.templates {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+}
+.template-choice {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  cursor: pointer;
+}
+.template-choice.is-chosen {
+  border-color: var(--ink);
+  background: #f3f5f0;
+}
+.template-choice input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.template-name {
+  font-weight: 600;
+}
+.template-cols {
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+}
+.check-field {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 500;
+}
+.share-section {
+  display: grid;
+  gap: 0.6rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+.share-section h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+.share-section input {
+  flex: 1;
+  min-width: 8rem;
+  min-height: 2.5rem;
+  padding: 0 0.7rem;
+  border: 1px solid #8f9aae;
+  border-radius: 6px;
+}
+.reader-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.reader-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.3rem 0;
+  border-bottom: 1px solid var(--line);
+}
+.review-grid .is-header td {
+  background: #f4f6f1;
+}
+.review-grid .cell-input {
+  min-width: 7rem;
+}
+
+/* ---------- Print view ---------- */
+
+.print-view {
+  padding: 1rem;
+  background: #777;
+  min-height: 100vh;
+}
+.print-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  padding: 0.6rem 0.9rem;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  background: var(--surface);
+}
+.print-sheet {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: 277mm;
+  height: 190mm;
+  margin: 0 auto 1rem;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  page-break-after: always;
+  break-after: page;
+  overflow: hidden;
+}
+.print-page {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 12mm 10mm 10mm;
+  background: var(--paper);
+  font-family: var(--book);
+  color: var(--ink);
+  overflow: hidden;
+}
+.print-page.is-empty {
+  background: #fff;
+}
+.print-page + .print-page {
+  border-left: 1px solid #b8c4b8;
+}
+.print-page h2 {
+  font-size: 15pt;
+  margin-bottom: 4mm;
+}
+.print-page h2 small {
+  font-size: 0.65em;
+  font-weight: 400;
+  font-style: italic;
+  color: var(--ink-soft);
+}
+.print-part {
+  font-size: 9pt;
+  font-style: italic;
+  color: var(--ink-soft);
+  margin-bottom: 2mm;
+}
+.print-page footer {
+  margin-top: auto;
+  text-align: center;
+  font-size: 9pt;
+  color: var(--ink-soft);
+}
+.print-cover {
+  justify-content: center;
+  align-items: center;
+  background-color: var(--cloth);
+  background-image: linear-gradient(90deg, var(--leather) 0 11%, rgba(0, 0, 0, 0.35) 11% 12%, transparent 12%);
+  font-size: 18pt;
+}
+.print-cover .cover-plate {
+  margin: 0 0 0 11%;
+  width: 62%;
+  align-self: center;
+}
+.print-ledger {
+  font-size: 9pt;
+  --row-height: 6.2mm;
+}
+.print-ledger th,
+.print-ledger td {
+  white-space: normal;
+}
+.print-contents {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.print-contents li {
+  display: flex;
+  justify-content: space-between;
+  padding: 2mm 0;
+  border-bottom: 1px dotted var(--ink-soft);
+}
+@page {
+  size: A4 landscape;
+  margin: 10mm;
+}
+@media print {
+  .print-view {
+    padding: 0;
+    background: #fff;
+  }
+  .print-bar {
+    display: none;
+  }
+  .print-sheet {
+    width: 100%;
+    height: 185mm;
+    margin: 0;
+    box-shadow: none;
+  }
+  .print-page {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
 }

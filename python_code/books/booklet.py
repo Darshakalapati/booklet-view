@@ -22,6 +22,10 @@ Rules:
 
 3. Each table starts on a new page with its name as the heading. The book
    opens with a cover and a contents page.
+
+4. Number columns are added up like a cash book: each page carries the total
+   of its own rows, the amount brought forward from earlier pages, and the
+   running total so far.
 """
 
 MIN_COLUMNS_PER_PAGE = 2  # the repeated first column plus at least one more
@@ -55,12 +59,34 @@ def build_table_pages(table, columns, rows, columns_per_page, rows_per_page):
 
     column_groups = split_columns(columns, columns_per_page)
     row_groups = chunk(rows, rows_per_page) or [[]]
+    has_numbers = any(column.data_type == "number" for column in columns)
+
+    def amount(row, column):
+        value = row.data.get(column.key)
+        return value if isinstance(value, (int, float)) and not isinstance(value, bool) else 0
 
     pages = []
+    carried = {column.key: 0 for column in columns if column.data_type == "number"}
     for row_part, row_group in enumerate(row_groups, start=1):
         first_row_number = (row_part - 1) * rows_per_page + 1
+        page_sums = {
+            column.key: sum(amount(row, column) for row in row_group)
+            for column in columns if column.data_type == "number"
+        }
         for column_part, column_group in enumerate(column_groups, start=1):
+            totals = None
+            if has_numbers:
+                totals = [
+                    {
+                        "brought_forward": tidy(carried[column.key]),
+                        "page": tidy(page_sums[column.key]),
+                        "running": tidy(carried[column.key] + page_sums[column.key]),
+                    } if column.data_type == "number" else None
+                    for column in column_group
+                ]
             pages.append({
+                "totals": totals,
+                "last_rows": row_part == len(row_groups),
                 "type": "table",
                 "table_id": table.pk,
                 "table_name": table.name,
@@ -83,7 +109,15 @@ def build_table_pages(table, columns, rows, columns_per_page, rows_per_page):
                     for offset, row in enumerate(row_group)
                 ],
             })
+        for key in carried:
+            carried[key] += page_sums[key]
     return pages
+
+
+def tidy(number):
+    """Whole numbers stay whole; others are rounded to two places."""
+    rounded = round(number, 2)
+    return int(rounded) if rounded == int(rounded) else rounded
 
 
 def build_book_pages(book, tables_with_content, columns_per_page, rows_per_page):

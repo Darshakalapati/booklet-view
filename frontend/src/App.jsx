@@ -3,6 +3,7 @@ import { useAuth } from './auth';
 import Shell from './components/Shell';
 import Book from './pages/Book';
 import Books from './pages/Books';
+import Print from './pages/Print';
 import Reader from './pages/Reader';
 import SignIn from './pages/SignIn';
 import Trash from './pages/Trash';
@@ -28,6 +29,7 @@ export default function App() {
       <Route element={<SignedIn />}>
         {/* The reader has no Shell around it: only the book is on screen. */}
         <Route path="/books/:bookId/read" element={<Reader />} />
+        <Route path="/books/:bookId/print" element={<Print />} />
         <Route element={<Shell />}>
           <Route index element={<Books />} />
           <Route path="/books/:bookId" element={<Book />} />

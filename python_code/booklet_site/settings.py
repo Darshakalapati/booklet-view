@@ -189,3 +189,9 @@ STORAGES = {
 FRONTEND_DIST = Path(os.environ.get("BOOKLET_FRONTEND_DIST", BASE_DIR.parent / "frontend" / "dist"))
 if FRONTEND_DIST.is_dir():
     WHITENOISE_ROOT = FRONTEND_DIST
+# File types the server would otherwise not name correctly.
+WHITENOISE_MIMETYPES = {
+    ".webmanifest": "application/manifest+json",
+    ".wasm": "application/wasm",
+    ".gz": "application/gzip",
+}

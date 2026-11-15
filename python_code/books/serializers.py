@@ -2,14 +2,15 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 from rest_framework import serializers
 
-from .models import Book, Column, Row, Table, next_position
+from .models import Book, BookShare, Column, Row, Table, next_position
 from .values import clean_value
 
 User = get_user_model()
 
 
 def user_can_access_book(user, book):
-    return user.is_booklet_admin or book.owner_id == user.pk
+    """May this user CHANGE the book? Readers of a shared book may not."""
+    return book.can_be_changed_by(user)
 
 
 class ParentFieldMixin:
@@ -40,14 +41,33 @@ class BookSerializer(serializers.ModelSerializer):
     owner = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), required=False)
     owner_username = serializers.CharField(source="owner.username", read_only=True)
     table_count = serializers.SerializerMethodField()
+    last_written_at = serializers.SerializerMethodField()
+    access = serializers.SerializerMethodField()
+    reader_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Book
-        fields = ["id", "title", "owner", "owner_username", "table_count", "created_at", "updated_at"]
+        fields = [
+            "id", "title", "subtitle", "color", "owner", "owner_username", "table_count",
+            "last_written_at", "access", "reader_count", "created_at", "updated_at",
+        ]
         read_only_fields = ["id", "created_at", "updated_at"]
 
     def get_table_count(self, book):
         return book.tables.count()
+
+    def get_last_written_at(self, book):
+        return book.last_written_at()
+
+    def get_access(self, book):
+        """'owner', 'admin' or 'reader': what the signed-in person may do with it."""
+        user = self.context["request"].user
+        if book.owner_id == user.pk:
+            return "owner"
+        return "admin" if user.is_booklet_admin else "reader"
+
+    def get_reader_count(self, book):
+        return book.shares.count()
 
     def validate_owner(self, owner):
         user = self.context["request"].user
@@ -229,3 +249,14 @@ class ReorderSerializer(serializers.Serializer):
     """The ids of every item, listed in the order they should appear."""
 
     order = serializers.ListField(child=serializers.IntegerField(), allow_empty=False)
+
+
+class ShareSerializer(serializers.ModelSerializer):
+    """One person a book is shared with, read-only."""
+
+    username = serializers.CharField(source="user.username", read_only=True)
+    user = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    class Meta:
+        model = BookShare
+        fields = ["user", "username", "created_at"]

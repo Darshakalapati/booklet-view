@@ -12,6 +12,7 @@ staticfiles/
 # Frontend (added in a later phase)
 node_modules/
 dist/
+frontend/public/ocr/
 
 # Editors and operating systems
 .idea/

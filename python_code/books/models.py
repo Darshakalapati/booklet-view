@@ -69,14 +69,53 @@ def next_position(queryset):
 
 
 class Book(SoftDeleteModel):
+    class Cloth(models.TextChoices):
+        NAVY = "navy", "Navy"
+        GREEN = "green", "Green"
+        MAROON = "maroon", "Maroon"
+        BROWN = "brown", "Brown"
+        BLACK = "black", "Black"
+
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="books")
     title = models.CharField(max_length=200)
+    subtitle = models.CharField(max_length=60, blank=True)  # a short label under the title
+    color = models.CharField(max_length=10, choices=Cloth.choices, default=Cloth.NAVY)  # the cover cloth
+    # People who may open and read this book, but not change it.
+    readers = models.ManyToManyField(settings.AUTH_USER_MODEL, through="BookShare", related_name="shared_books", blank=True)
 
     class Meta:
         ordering = ["created_at", "id"]
 
     def __str__(self):
         return self.title
+
+    def last_written_at(self):
+        """When anything inside the book last changed; None for an empty book."""
+        latest = [
+            Table.objects.filter(book=self).aggregate(latest=Max("updated_at"))["latest"],
+            Column.objects.filter(table__book=self, table__deleted_at__isnull=True).aggregate(latest=Max("updated_at"))["latest"],
+            Row.objects.filter(table__book=self, table__deleted_at__isnull=True).aggregate(latest=Max("updated_at"))["latest"],
+        ]
+        latest = [moment for moment in latest if moment is not None]
+        return max(latest) if latest else None
+
+    def can_be_changed_by(self, user):
+        return user.is_booklet_admin or self.owner_id == user.pk
+
+    def can_be_read_by(self, user):
+        return self.can_be_changed_by(user) or BookShare.objects.filter(book=self, user=user).exists()
+
+
+class BookShare(models.Model):
+    """A book opened to another person, read-only."""
+
+    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name="shares")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="book_shares")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = [("book", "user")]
+        ordering = ["created_at", "id"]
 
     def delete_summary(self):
         tables = self.tables.count()

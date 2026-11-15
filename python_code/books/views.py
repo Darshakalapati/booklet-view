@@ -1,5 +1,7 @@
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.db import transaction
+from django.db.models import Q
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
@@ -9,17 +11,20 @@ from rest_framework.views import APIView
 
 from .booklet import build_book_pages, build_table_pages
 from .importers import ImportProblem, read_upload
-from .models import Book, Column, Row, Table, next_position
+from .models import Book, BookShare, Column, Row, Table, next_position
 from .serializers import (
     BookSerializer,
     ColumnSerializer,
     ReorderSerializer,
     RowSerializer,
+    ShareSerializer,
     TableDetailSerializer,
     TableSerializer,
 )
 
+User = get_user_model()
 YES = ("1", "true", "yes")
+READ_ACTIONS = {"list", "retrieve", "booklet", "pages"}
 
 
 def is_confirmed(request):
@@ -62,6 +67,7 @@ class OwnedViewSet(viewsets.ModelViewSet):
 
     model = None
     owner_path = None         # lookup from this model to the book's owner
+    readers_path = None       # lookup from this model to the book's readers
     parent_alive_filters = {}  # parents must not be in the trash
     filter_param = None       # e.g. ?book=3 or ?table=7
 
@@ -73,7 +79,11 @@ class OwnedViewSet(viewsets.ModelViewSet):
         queryset = queryset.filter(**self.parent_alive_filters)
         user = self.request.user
         if not user.is_booklet_admin:
-            queryset = queryset.filter(**{self.owner_path: user})
+            # Own books always. Books shared with you only for reading.
+            mine = Q(**{self.owner_path: user})
+            if self.action in READ_ACTIONS and self.readers_path:
+                mine |= Q(**{self.readers_path: user})
+            queryset = queryset.filter(mine).distinct()
         if self.filter_param and self.action == "list":
             value = self.request.query_params.get(self.filter_param)
             if value:
@@ -106,6 +116,7 @@ class OwnedViewSet(viewsets.ModelViewSet):
 class BookViewSet(OwnedViewSet):
     model = Book
     owner_path = "owner"
+    readers_path = "readers"
     serializer_class = BookSerializer
 
     def get_queryset(self):
@@ -114,6 +125,27 @@ class BookViewSet(OwnedViewSet):
         if owner and owner.isdigit() and self.action == "list":
             queryset = queryset.filter(owner_id=int(owner))
         return queryset
+
+    @action(detail=True, methods=["get", "post", "delete"])
+    def shares(self, request, pk=None):
+        """Who may read this book.
+
+        GET lists them. POST {"username": ...} adds a reader. DELETE
+        {"username": ...} removes one. Only the owner or an admin may change it.
+        """
+        book = self.get_object()
+        if request.method != "GET":
+            username = str(request.data.get("username", "")).strip()
+            person = User.objects.filter(username__iexact=username, is_active=True).first()
+            if person is None:
+                raise ValidationError({"username": "There is no user with this name."})
+            if request.method == "POST":
+                if person.pk == book.owner_id:
+                    raise ValidationError({"username": "That is the owner of the book."})
+                BookShare.objects.get_or_create(book=book, user=person)
+            else:
+                BookShare.objects.filter(book=book, user=person).delete()
+        return Response(ShareSerializer(book.shares.select_related("user"), many=True).data)
 
     @action(detail=True, methods=["post"], url_path="reorder-tables")
     def reorder_tables(self, request, pk=None):
@@ -135,7 +167,24 @@ class BookViewSet(OwnedViewSet):
         rows_per_page = page_size(request, "rows_per_page", settings.BOOKLET_DEFAULT_ROWS_PER_PAGE)
         content = [(table, list(table.columns.all()), list(table.rows.all())) for table in book.tables.all()]
         pages = build_book_pages(book, content, columns_per_page, rows_per_page)
-        return Response({"book_id": book.pk, "title": book.title, "page_count": len(pages), "pages": pages})
+        return Response({
+            "book_id": book.pk,
+            "title": book.title,
+            "subtitle": book.subtitle,
+            "color": book.color,
+            "can_edit": book.can_be_changed_by(request.user),
+            "page_count": len(pages),
+            "pages": pages,
+            # Every table with all its columns, for adding a row from inside the book.
+            "tables": [
+                {
+                    "id": table.pk,
+                    "name": table.name,
+                    "columns": [{"id": c.pk, "name": c.name, "data_type": c.data_type} for c in columns],
+                }
+                for table, columns, _rows in content
+            ],
+        })
 
     @action(
         detail=True,
@@ -188,6 +237,7 @@ class BookViewSet(OwnedViewSet):
 class TableViewSet(OwnedViewSet):
     model = Table
     owner_path = "book__owner"
+    readers_path = "book__readers"
     parent_alive_filters = {"book__deleted_at__isnull": True}
     filter_param = "book"
     parser_classes = [JSONParser, FormParser, MultiPartParser]
@@ -227,6 +277,7 @@ class TableViewSet(OwnedViewSet):
 class ColumnViewSet(OwnedViewSet):
     model = Column
     owner_path = "table__book__owner"
+    readers_path = "table__book__readers"
     parent_alive_filters = {"table__deleted_at__isnull": True, "table__book__deleted_at__isnull": True}
     filter_param = "table"
     serializer_class = ColumnSerializer
@@ -235,6 +286,7 @@ class ColumnViewSet(OwnedViewSet):
 class RowViewSet(OwnedViewSet):
     model = Row
     owner_path = "table__book__owner"
+    readers_path = "table__book__readers"
     parent_alive_filters = {"table__deleted_at__isnull": True, "table__book__deleted_at__isnull": True}
     filter_param = "table"
     serializer_class = RowSerializer
