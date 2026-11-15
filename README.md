@@ -2,6 +2,8 @@
 
 A website where people keep tables (ledgers, price lists, checklists, task lists, anything) and read them as a **book** instead of a spreadsheet.
 
+**Live site:** <https://booklet-view.onrender.com> (accounts are created by the admin; on the free plan the first visit after a quiet spell takes about a minute to wake)
+
 | A page being turned on a phone | A page being turned on a laptop |
 |---|---|
 | ![A page curling under a finger on a phone](documents/screenshots/phone-page-turning.png) | ![A page being dragged across an open two-page book](documents/screenshots/laptop-page-turning.png) |
@@ -23,7 +25,7 @@ A website where people keep tables (ledgers, price lists, checklists, task lists
 | 2 | Screens for signing in and editing tables | **Done** |
 | 3 | Book view without animation (ledger look, cover, contents) | **Done** |
 | 4 | Page-turning animation, on phones and laptops | **Done** |
-| — | Ready to go live on a free plan (Render + Neon) | **Done** |
+| — | Live on the internet on a free plan (Render + Neon) | **Done** |
 | 5 | Layout polish for laptop, desktop, iPad and phone | Next |
 | 6 | Upload tables from Word and PDF | Planned |
 | 7 | Upload photos of paper pages | Planned |
@@ -148,6 +150,7 @@ python manage.py test
 | `06-Testing-on-a-Phone.docx` | How to open the site on a phone, and what to try |
 | `07-Going-Live.docx` | Putting the site on the internet: decisions, code changes, steps |
 | `08-Page-Turning.docx` | Phase 4: the page-turning animation |
+| `09-Complete-Record.docx` | The whole conversation in order: requests, decisions, problems solved, and going live |
 
 ## Built with
 

@@ -2,6 +2,30 @@
 
 Every change to the project, newest first. Each entry names the document that records the discussion behind it.
 
+## 2026-10-04 — Live
+
+Record: `documents/09-Complete-Record.docx`
+
+### Done
+
+- The code was pushed to GitHub (`Darshakalapati/booklet-view`).
+- The site was published on Render from `render.yaml`, with the database on Neon. The first build took 1 minute 22 seconds and had no errors.
+- Live address: <https://booklet-view.onrender.com>.
+
+### Added
+
+- `documents/09-Complete-Record.docx`: one document recording the whole conversation in order, every decision, the problems met and how each was solved, and what is and is not yet tested.
+- `README.md`: the live address.
+
+### Checked
+
+- Render shows the service as Live, the health address answers, the log shows the first admin account was created, and the sign-in page loads.
+- Not checked: signing in on the live site (it needs the owner's password), and the page turn on a real phone.
+
+### Unchanged
+
+- No Python code changed in this step.
+
 ## 2026-10-04 — Phase 4: page turning
 
 Notes: `documents/08-Page-Turning.docx`
